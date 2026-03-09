@@ -65,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             Row(
-              children: items.map((e) => Text(e)).toList(),
+              children: items.map((e) => Text(e.toString())).toList(),
             ),
           ],
         ),
