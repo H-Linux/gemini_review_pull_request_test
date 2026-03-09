@@ -1,0 +1,6 @@
+[pr_reviewer]
+# 让 AI 用中文回复，并聚焦于实质性问题
+extra_instructions = "请使用简体中文进行回复。请重点关注潜在的 Bug、安全漏洞和性能问题，忽略简单的代码格式问题。"
+
+[pr_description]
+extra_instructions = "请使用简体中文生成 PR 摘要。"

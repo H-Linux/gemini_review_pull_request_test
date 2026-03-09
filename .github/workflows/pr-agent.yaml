@@ -1,0 +1,29 @@
+name: PR-Agent with Gemini
+
+# 触发条件：创建/更新PR时，或者在评论区发消息时
+on:
+  pull_request:
+    types:[opened, reopened, synchronize]
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  pr_agent_job:
+    # 如果是在评论区触发，必须确保是对 PR 的评论，而不是对普通 Issue 的评论
+    if: ${{ github.event.sender.type != 'Bot' && (github.event_name == 'pull_request' || github.event.issue.pull_request) }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    steps:
+      - name: PR Agent action step
+        id: pragent
+        uses: Codium-ai/pr-agent@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # LiteLLM 识别 Google Gemini 必须的环境变量
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # 核心配置：告诉 PR-Agent 使用 Gemini 模型
+          config.model: "gemini/gemini-1.5-flash"           # 主模型，
+          config.fallback_models: "gemini/gemini-2.0-flash" # 备用模型
