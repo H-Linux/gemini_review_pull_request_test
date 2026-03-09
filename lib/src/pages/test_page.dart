@@ -9,6 +9,7 @@ class TestPage extends StatefulWidget {
 
 class _TestPageState extends State<TestPage> {
   List<int> items = List.generate(10, (index) => index);
+  List<int> items2 = List.generate(10, (index) => index);
 
   late TextEditingController _nameController;
   late ScrollController _scrollController;
@@ -42,9 +43,8 @@ class _TestPageState extends State<TestPage> {
       ),
       body: ListView(
         children: [
-          Row(
-            children: items.map((e) => Text(e.toString())).toList(),
-          ),
+          Row(children: items.map((e) => Text(e.toString())).toList()),
+          Row(children: items2.map((e) => Text(e.toString())).toList()),
           TextField(controller: _nameController),
           ElevatedButton(
             onPressed: _submitForm,
