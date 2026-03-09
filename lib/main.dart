@@ -32,6 +32,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  List<dynamic> items = [];
+
+  @override
+  void initState() {
+    items = List.generate(10, (index) => index);
+    super.initState();
+  }
+
   void _incrementCounter() {
     setState(() {
       _counter++;
@@ -55,6 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            Row(
+              children: items.map((e) => Text(e)).toList(),
             ),
           ],
         ),
