@@ -33,7 +33,9 @@ extra_instructions = """
 1. 提供的重构代码必须是完全可编译的 Dart 2.12+ (支持 Null Safety) 代码。
 2. Flutter 的 Widget 嵌套代码中，必须严格遵循结尾逗号（Trailing Commas）规范，以便自动格式化。
 3. 优先推荐使用 Flutter 原生 API 或 Dart 的拓展方法（如 .map().toList()）。
-"""[pr_description]
+"""
+
+[pr_description]
 # 生成 PR 标题和描述时的规则
 extra_instructions = """
 1. 请使用 Markdown 格式输出。
