@@ -3,7 +3,7 @@ name: PR-Agent with Gemini
 # 触发条件：创建/更新PR时，或者在评论区发消息时
 on:
   pull_request:
-    types:[opened, reopened, synchronize]
+    types: [opened, reopened, synchronize]
   issue_comment:
     types: [created, edited]
 
