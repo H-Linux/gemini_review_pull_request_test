@@ -1,6 +1,10 @@
 [config]
 # 强制让所有 AI 回复都使用简体中文
 language = "zh-CN"
+# 配置文件版本
+version = "1.0.0"
+# 日志级别: debug, info, warn, error
+log_level = "info"
 
 [pr_reviewer]
 # 这是核心：给 AI 审查员的额外硬性指令 (使用三引号支持多行)
@@ -10,22 +14,64 @@ extra_instructions = """
 1. **极其严格的类型与隐式转换检查**（最高优先级）：
    - 彻底审查所有 `dynamic` 类型、泛型集合（如 `List<dynamic>`、`Map`）的遍历和传值。
    - 检查 Widget 的入参类型是否绝对匹配。例如：`Text()` 的第一个参数必须严格为 `String`，如果传入的是 `int` 或 `dynamic` 元素，必须要求开发者显式调用 `.toString()`。
+   - 检查 Null Safety 相关问题：避免使用 `!` 强制非空断言，除非有绝对的把握。
+   - 检查类型推断是否正确，避免因类型推断导致的运行时错误。
 
 2. **BuildContext 异步崩溃防范**：
    - 检查所有在 `await` 之后的 `BuildContext` 使用。如果使用了 `context`，必须要求在之前添加 `if (!context.mounted) return;` 检查，否则指出会导致运行时崩溃。
+   - 检查 `context` 的传递是否合理，避免在不适当的地方使用 `context`。
 
 3. **Flutter 性能与重绘优化**：
    - 检查是否遗漏了 `const` 关键字。所有的纯静态 Widget 树必须使用 `const` 构造函数。
    - 检查 `build()` 方法的纯净度：`build()` 方法中绝对不能包含耗时的同步计算、网络请求或重度 List 遍历。
    - 避免在列表中滥用没有被 ListView.builder 优化的长 Column/Row。
+   - 检查是否合理使用了 `const` 构造函数、`const` 变量和 `const` 集合。
+   - 检查是否合理使用了 `RepaintBoundary`、`const` 构造函数等性能优化手段。
+   - 检查动画和滚动性能，避免不必要的重绘。
 
 4. **内存泄漏与生命周期**：
    - 检查 `StatefulWidget` 的 `initState` 中初始化的资源（如 `AnimationController`, `TextEditingController`, `Timer`, `ScrollController`），是否在 `dispose` 方法中被正确释放。
+   - 检查 `Stream`、`Future` 等异步操作的取消和清理。
+   - 检查是否存在循环引用导致的内存泄漏。
+   - 检查 `setState` 的使用是否合理，避免不必要的状态更新。
 
-5. **忽略噪音**：
+5. **代码结构与可读性**：
+   - 检查代码是否遵循 Dart 风格指南，包括命名规范、代码格式化等。
+   - 检查方法和函数的长度，避免过长的方法体。
+   - 检查代码注释是否充分，特别是复杂的业务逻辑和算法。
+   - 检查是否合理使用了 Dart 的语言特性，如扩展方法、泛型、异步/await 等。
+
+6. **安全性**：
+   - 检查是否存在安全漏洞，如硬编码的敏感信息、不安全的网络请求等。
+   - 检查权限使用是否合理，是否遵循最小权限原则。
+   - 检查输入验证是否充分，避免注入攻击等安全问题。
+
+7. **测试覆盖率**：
+   - 检查是否为新代码添加了相应的单元测试或集成测试。
+   - 检查测试覆盖率是否达到项目要求。
+
+8. **依赖管理**：
+   - 检查是否添加了不必要的依赖包。
+   - 检查依赖包的版本是否合理，是否存在安全漏洞。
+   - 检查是否遵循了项目的依赖管理规范。
+
+9. **忽略噪音**：
    - 忽略简单的缩进、空行等格式化问题（假设已有 dart format 处理）。
    - 直接指出问题并给出正确的 Dart 代码示例，不要说客套话。
 """
+# 审查时需要关注的问题类型
+review_categories = [
+    "bug",               # 代码缺陷
+    "performance",       # 性能问题
+    "security",          # 安全问题
+    "best_practices",    # 最佳实践违背
+    "testing",           # 测试覆盖率
+    "documentation"      # 文档缺失
+]
+# 是否启用自动修复建议
+enable_auto_fixes = true
+# 修复建议的详细程度: low, medium, high
+fix_detail_level = "high"
 
 [pr_code_suggestions]
 # 当使用 /improve 命令时，AI 给出代码建议的规则
@@ -33,7 +79,22 @@ extra_instructions = """
 1. 提供的重构代码必须是完全可编译的 Dart 2.12+ (支持 Null Safety) 代码。
 2. Flutter 的 Widget 嵌套代码中，必须严格遵循结尾逗号（Trailing Commas）规范，以便自动格式化。
 3. 优先推荐使用 Flutter 原生 API 或 Dart 的拓展方法（如 .map().toList()）。
+4. 提供的代码建议应该考虑性能优化、内存管理和代码可读性。
+5. 对于复杂的重构，提供详细的解释和理由。
+6. 确保代码符合 Dart 风格指南和 Flutter 最佳实践。
+7. 避免引入不必要的依赖或复杂度。
 """
+# 代码建议的类型
+suggestion_types = [
+    "refactor",          # 代码重构
+    "optimization",      # 性能优化
+    "bug_fix",           # 缺陷修复
+    "readability"        # 可读性改进
+]
+# 建议的最大数量
+max_suggestions = 5
+# 是否包含代码示例
+include_code_examples = true
 
 [pr_description]
 # 生成 PR 标题和描述时的规则
@@ -41,10 +102,56 @@ extra_instructions = """
 1. 请使用 Markdown 格式输出。
 2. 总结本次 PR 对 Flutter UI、状态管理或业务逻辑做出了哪些实质性改变。
 3. 如果代码中包含对 pubspec.yaml 的修改，请醒目地指出新增或升级了哪些依赖包。
+4. 提供清晰的 PR 标题，概括本次变更的主要内容。
+5. 详细描述本次变更的动机和背景。
+6. 列出本次变更的主要功能点和改进。
+7. 如果有破坏性变更，请明确指出并提供迁移指南。
+8. 提供测试信息，包括测试覆盖的场景和结果。
 """
+# PR 标题的最大长度
+max_title_length = 50
+# 是否包含变更文件列表
+include_file_changes = true
+# 是否包含提交历史
+include_commit_history = false
 
 [pr_questions]
 # 当在评论区使用 /ask 提问时的规则
 extra_instructions = """
 请站在 Flutter 专家的角度，用简洁、专业的中文回答开发者的问题，必要时附带官方文档最佳实践。
+1. 提供详细的技术解释和代码示例。
+2. 引用相关的官方文档或最佳实践。
+3. 考虑性能、安全性和可维护性。
+4. 给出具体的解决方案和建议。
+5. 避免使用过于技术性的术语，确保回答易于理解。
 """
+# 回答的详细程度: brief, detailed, comprehensive
+answer_detail_level = "detailed"
+# 是否包含代码示例
+include_code_samples = true
+# 是否引用官方文档
+include_official_docs = true
+
+[pr_agent]
+# PR 代理的整体配置
+# 是否启用自动审查
+auto_review = true
+# 是否启用自动描述生成
+auto_description = true
+# 是否启用自动问题回答
+auto_answer = false
+# 审查超时时间（秒）
+review_timeout = 300
+# 最大并发审查数
+max_concurrent_reviews = 3
+
+[ai_model]
+# AI 模型配置
+# 模型名称
+model_name = "gemini"
+# 温度参数 (0.0-1.0)，值越低越确定
+temperature = 0.3
+# 最大输出 tokens
+max_output_tokens = 4096
+# 上下文窗口大小
+context_window = 16384
